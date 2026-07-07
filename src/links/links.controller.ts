@@ -7,6 +7,7 @@ import {
   Param,
   HttpCode,
   HttpStatus,
+  Res,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -20,10 +21,14 @@ import {
 } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
+
 import { LinksService } from './links.service';
+
 import { CreateRandomLinkDto } from './dto/create-random-link.dto';
 import { CreateCustomLinkDto } from './dto/create-custom-link.dto';
 import { UnlockLinkDto } from './dto/unlock-link.dto';
+
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { OptionalJwtGuard } from '../common/guards/optional-jwt.guard';
 
@@ -95,10 +100,10 @@ export class LinksController {
   // GET /:code
   @Get(':code')
   @ApiOperation({ summary: 'Resolve a shortened link to the original URL' })
-  @ApiOkResponse({ description: 'Original URL returned if link is public' })
   @ApiParam({ name: 'code', description: 'Short link code' })
-  access(@Param('code') code: string) {
-    return this.links.access(code);
+  async access(@Param('code') code: string, @Res() res: Response) {
+    const { originalUrl} = await this.links.access(code)
+    return res.redirect(302, originalUrl)
   }
 
   // POST /:code/unlock
