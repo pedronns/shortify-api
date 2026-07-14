@@ -102,15 +102,26 @@ export class LinksController {
   @ApiOperation({ summary: 'Resolve a shortened link to the original URL' })
   @ApiParam({ name: 'code', description: 'Short link code' })
   async access(@Param('code') code: string, @Res() res: Response) {
-    const { originalUrl} = await this.links.access(code)
-    return res.redirect(302, originalUrl)
+    const result = await this.links.access(code);
+
+    if (result.protected) {
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      const redirectTarget = `${frontendUrl.replace(/\/$/, '')}/${encodeURIComponent(code)}/unlock`;
+      return res.redirect(302, redirectTarget);
+    }
+
+    return res.redirect(302, result.originalUrl);
   }
 
   // POST /:code/unlock
   @Post(':code/unlock')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Unlock a protected shortened link with a password' })
-  @ApiOkResponse({ description: 'Protected link unlocked and original URL returned' })
+  @ApiOperation({
+    summary: 'Unlock a protected shortened link with a password',
+  })
+  @ApiOkResponse({
+    description: 'Protected link unlocked and original URL returned',
+  })
   @ApiParam({ name: 'code', description: 'Short link code' })
   unlock(@Param('code') code: string, @Body() dto: UnlockLinkDto) {
     return this.links.unlock(code, dto);

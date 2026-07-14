@@ -57,11 +57,11 @@ export class LinksService {
     this.checkExpiry(link);
 
     if (link.protected) {
-      throw new UnauthorizedException('PASSWORD_REQUIRED');
+      return { protected: true };
     }
 
     await this.repo.incrementClicks(link.id);
-    return { originalUrl: link.url };
+    return { originalUrl: link.url, protected: false };
   }
 
   async unlock(code: string, dto: UnlockLinkDto) {

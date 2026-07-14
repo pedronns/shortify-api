@@ -180,10 +180,8 @@ npm run build && npm start
 
 #### GET /:code
 ```json
-// Response 200
-{ "originalUrl": "https://exemplo.com/pagina" }
-
-// Response 401 — PASSWORD_REQUIRED
+// Response 302 — redirect to the original URL for unprotected links
+// Response 302 — redirect to the frontend unlock page for protected links
 // Response 410 — LINK_EXPIRED
 // Response 404 — NOT_FOUND
 ```
