@@ -80,7 +80,7 @@ export class LinksService {
   async delete(code: string, userId?: string) {
     const link = await this.findOrThrow(code);
 
-    if (userId && link.userId && link.userId !== userId) {
+    if (!userId || !link.userId || link.userId !== userId) {
       throw new UnauthorizedException('NOT_YOUR_LINK');
     }
 

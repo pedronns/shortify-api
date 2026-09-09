@@ -1,6 +1,6 @@
 # Shortify v2
 
-API encurtadora de links construída com **NestJS**, **Prisma** e **SQLite**.
+API encurtadora de links construída com **NestJS**, **Prisma** e **PostgreSQL**.
 
 ---
 
@@ -9,7 +9,7 @@ API encurtadora de links construída com **NestJS**, **Prisma** e **SQLite**.
 | Feature | v1 (Express + MongoDB) | v2 (NestJS + SQLite) |
 |---|---|---|
 | Framework | Express v5 | NestJS |
-| Banco de dados | MongoDB | SQLite via Prisma |
+| Banco de dados | MongoDB | PostgreSQL via Prisma |
 | Autenticação | — | JWT (opcional) |
 | Expiração de links | — | TTL por link |
 | Estatísticas | Total de cliques | Cliques por dia |
@@ -23,7 +23,7 @@ API encurtadora de links construída com **NestJS**, **Prisma** e **SQLite**.
 - **Runtime**: Node.js v18+
 - **Framework**: NestJS v10
 - **ORM**: Prisma v5
-- **Banco de dados**: SQLite
+- **Banco de dados**: PostgreSQL
 - **Linguagem**: TypeScript
 - **Autenticação**: JWT + Passport
 - **Hash**: bcrypt
@@ -41,7 +41,7 @@ npm install
 Configure o `.env` (copie de `.env.example`):
 
 ```env
-DATABASE_URL="file:./shortify.db"
+DATABASE_URL="postgresql://..."
 PORT=3000
 FRONTEND_URL=http://localhost:5173
 JWT_SECRET=troque-por-algo-seguro
@@ -53,7 +53,7 @@ NODE_ENV=development
 Rode as migrations e gere o client do Prisma:
 
 ```bash
-npm run prisma:migrate   # cria o shortify.db e aplica o schema
+npm run prisma:migrate   # aplica o schema no banco configurado
 npm run prisma:generate  # gera o Prisma Client
 ```
 
@@ -77,6 +77,8 @@ npm run build && npm start
 |---|---|---|
 | POST | /auth/register | Cria conta |
 | POST | /auth/login | Login, retorna JWT |
+| GET | /auth/me | Retorna os dados da conta autenticada |
+| DELETE | /auth/me | Exclui a conta autenticada e seus links |
 
 #### POST /auth/register
 ```json
@@ -96,6 +98,21 @@ npm run build && npm start
 { "access_token": "eyJ..." }
 ```
 
+#### GET /auth/me
+```http
+Authorization: Bearer eyJ...
+```
+
+// Response 200
+{ "id": "user-id", "email": "user@example.com" }
+
+#### DELETE /auth/me
+```http
+Authorization: Bearer eyJ...
+```
+
+// Response 204 — No Content
+
 ---
 
 ### Links
@@ -113,7 +130,7 @@ npm run build && npm start
 | GET | /me/links | Obrigatório | Lista links do usuário |
 | GET | /:code | — | Acessa o link |
 | POST | /:code/unlock | — | Desbloqueia link protegido |
-| DELETE | /:code | Opcional | Deleta link |
+| DELETE | /:code | Obrigatório | Deleta link próprio |
 
 #### POST /random
 ```json

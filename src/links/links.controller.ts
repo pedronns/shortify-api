@@ -130,7 +130,7 @@ export class LinksController {
   // DELETE /:code
   @Delete(':code')
   @HttpCode(HttpStatus.NO_CONTENT)
-  @UseGuards(OptionalJwtGuard)
+  @UseGuards(AuthGuard('jwt'))
   @ApiOperation({ summary: 'Delete a shortened link' })
   @ApiNoContentResponse({ description: 'Link deleted successfully' })
   @ApiParam({ name: 'code', description: 'Short link code' })
